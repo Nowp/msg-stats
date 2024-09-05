@@ -73,6 +73,7 @@ async fn insert_messages(pool: &Pool<Postgres>, extract_file: MessengerExtractFi
         .enumerate()
         .flat_map(|(pos, reactions)| reactions.into_iter().map(move |x| (pos, x)))
         .map(|(pos, reaction)| Reaction {
+            id: pos as i32,
             message_id: **&ids.get(pos).expect("Message id not found"),
             reaction: reaction.reaction,
             actor_id: participants.get(&Some(reaction.actor)).map(|x|x.id),
