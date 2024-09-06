@@ -12,7 +12,7 @@ pub struct Participant {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Message {
     pub id: i32,
     pub timestamp_ms: PrimitiveDateTime,
@@ -22,7 +22,7 @@ pub struct Message {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Reaction {
     pub id: i32,
     pub reaction: String,
