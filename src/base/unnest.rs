@@ -2,13 +2,13 @@ use std::vec::IntoIter;
 use time::PrimitiveDateTime;
 use crate::base::model::{Message, Participant, Reaction};
 
-trait Unnest {
+pub trait Unnest {
     type Output;
     fn unnest(self) -> Self::Output;
 }
 
 impl Unnest for IntoIter<Participant> {
-    type Output = (Vec<i32>, Vec<Option<String>>);
+    type Output = (Vec<i32>, Vec<String>);
 
     fn unnest(self) -> Self::Output {
         let (mut ids, mut names): Self::Output = (vec![], vec![]);
@@ -20,9 +20,8 @@ impl Unnest for IntoIter<Participant> {
         (ids, names)
     }
 }
-
 impl Unnest for IntoIter<Message> {
-    type Output = (Vec<i32>, Vec<PrimitiveDateTime>, Vec<Option<String>>, Vec<Option<String>>, Vec<i32>, );
+    type Output = (Vec<i32>, Vec<PrimitiveDateTime>, Vec<Option<String>>, Vec<Option<String>>, Vec<Option<i32>>,);
 
     fn unnest(self) -> Self::Output {
         let (
@@ -44,9 +43,8 @@ impl Unnest for IntoIter<Message> {
         (ids, timestamps, import_filenames, contents, participant_ids)
     }
 }
-
 impl Unnest for IntoIter<Reaction> {
-    type Output = (Vec<i32>, Vec<String>, Vec<Option<i32>,>, Vec<i32>);
+    type Output = (Vec<i32>, Vec<String>, Vec<Option<i32>, >, Vec<i32>);
 
     fn unnest(self) -> Self::Output {
         let (
@@ -78,18 +76,18 @@ mod tests {
         let participants: Vec<Participant> = vec![
             Participant {
                 id: 0,
-                name: Some(String::from("John Doe")),
+                name: String::from("John Doe"),
             },
             Participant {
                 id: 1,
-                name: Some(String::from("Steve John")),
+                name: String::from("Steve John"),
             },
         ];
 
         let (ids, names) = participants.into_iter().unnest();
 
         assert_eq!(ids, vec![0, 1]);
-        assert_eq!(names, vec![Some(String::from("John Doe")), Some(String::from("Steve John"))]);
+        assert_eq!(names, vec![String::from("John Doe"), String::from("Steve John")]);
     }
 
     #[test]
@@ -100,14 +98,14 @@ mod tests {
                 timestamp_ms: PrimitiveDateTime::new(Date::from_calendar_date(2000, Month::February, 15).unwrap(), Time::from_hms(10, 10, 10).unwrap()),
                 import_filename: Some("file.json".to_string()),
                 content: Some("I'm a message".to_string()),
-                participant_id: 0
+                participant_id: Some(0)
             },
             Message {
                 id: 2,
                 timestamp_ms: PrimitiveDateTime::new(Date::from_calendar_date(2001, Month::December, 1).unwrap(), Time::from_hms(5, 5, 5).unwrap()),
                 import_filename: Some("file1.json".to_string()),
                 content: Some("I'm a messaaaage".to_string()),
-                participant_id: 3
+                participant_id: Some(3)
             },
         ];
 

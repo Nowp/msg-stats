@@ -11,3 +11,4 @@ serde = { version = "1.0.209", features = ["derive"] }
 encoding_rs = "0.8.34"
 time = {  version = "0.3.36", features = ["macros"] }
 futures = "0.3.30"
+itertools = "0.13.0"
