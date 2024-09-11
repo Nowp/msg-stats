@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::messenger::MessengerConversation;
 
 use console::{style, Emoji};
@@ -5,12 +6,15 @@ use crate::base::adapter::{ConversationConverter, ConversationLoader, MergeImpor
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Error;
 use std::fs;
+use std::ops::Add;
 use std::sync::Arc;
 use clap::{arg, Parser};
 use futures::future::join_all;
 use indicatif::{MultiProgress, ProgressBar};
 use itertools::Itertools;
+use serde::Deserialize;
 use tokio::sync::Mutex;
+use crate::base::model::ConversationMarker;
 
 mod messenger;
 mod base;
@@ -23,16 +27,20 @@ static REACTION: Emoji<'_, '_> = Emoji("😆  ", "");
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
+    /// Type of the messages (messenger)
+    #[arg(short, long, default_value_t = String::from("messenger"))]
+    app: String,
+
     /// URL of the Postgres database holding the schema</br>postgres://user:password@address:\[port]/database
     #[arg(short, long)]
     destination: String,
 
     /// Max connections of the connection pool
-    #[arg(short, long, default_value_t=1)]
+    #[arg(short, long, default_value_t = 1)]
     max_connections: u32,
 
     /// Chunk size of each task importing to database
-    #[arg(short, long, default_value_t=4294967295)]
+    #[arg(short, long, default_value_t = 4294967295)]
     chunk_size: u32,
 
     /// Folder containing files to import
@@ -40,11 +48,15 @@ struct Args {
     input: String,
 }
 
-fn parse_file(path: String) -> serde_json::Result<MessengerConversation> {
-    let content: String = fs::read_to_string(path).expect("Cannot read file");
-    serde_json::from_str::<MessengerConversation>(&content)
+fn parse_file<'a, T>(path: String, dest: &'a mut String) -> T
+where
+    T: Sized,
+    T: ConversationMarker,
+    T: Deserialize<'a>,
+{
+    dest.insert_str(0, fs::read_to_string(path).expect("Cannot read file").as_str());
+    serde_json::from_str::<T>(dest).unwrap()
 }
-
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -63,13 +75,18 @@ async fn main() -> Result<(), Error> {
 
     println!("Parsing conversations... {} files", paths.len());
     let conversation = paths.into_iter()
-        .map(|path| parse_file(path).unwrap())
-        .collect::<Vec<MessengerConversation>>()
+        .map(|path| {
+            let mut destination = String::new();
+            match args.app.as_str() {
+                "messenger" => parse_file::<MessengerConversation>(path, &mut destination),
+                _ => panic!("Unknown application name")
+            }
+        })
+        .collect_vec()
         .into_iter()
         .merge_import_files()
-        .map(MessengerConversation::convert)
+        .map(ConversationConverter::convert)
         .unwrap();
-
 
     println!(
         "{} {}Importing participants...",

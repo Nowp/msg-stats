@@ -1,5 +1,4 @@
 use time::PrimitiveDateTime;
-use crate::base::adapter::ConversationMarker;
 
 /// Someone in the group that may have sent [Message] or put [Reaction] on some
 #[derive(Debug, Clone)]

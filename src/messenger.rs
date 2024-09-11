@@ -1,13 +1,12 @@
-use std::future::Future;
-use std::vec::IntoIter;
-use futures::future::join_all;
+use crate::base::adapter::{ConversationConverter, ConversationLoader, MergeImportFiles};
+use crate::base::database::{insert_messages, insert_participants, insert_reactions};
+use crate::base::model::{Conversation, ConversationMarker, Message, Participant, Reaction};
 use itertools::Itertools;
 use serde::Deserialize;
 use sqlx::{Error, PgPool};
+use std::future::Future;
+use std::vec::IntoIter;
 use time::{Duration, OffsetDateTime, PrimitiveDateTime};
-use crate::base::adapter::{ConversationConverter, ConversationLoader, ConversationMarker, MergeImportFiles};
-use crate::base::model::{Conversation, Message, Participant, Reaction};
-use crate::base::database::{insert_messages, insert_participants, insert_reactions};
 
 #[derive(Deserialize, Debug)]
 pub struct MessengerParticipant {
@@ -35,7 +34,6 @@ pub struct MessengerConversation {
 }
 
 impl ConversationMarker for MessengerConversation {}
-
 
 impl ConversationLoader<PgPool> for Conversation {
     async fn load_participants(&self, destination: &PgPool) -> Result<(), Error> {
