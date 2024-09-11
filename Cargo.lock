@@ -782,23 +782,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
-name = "messenger-stats"
-version = "0.1.0"
-dependencies = [
- "clap",
- "console",
- "encoding_rs",
- "futures",
- "indicatif",
- "itertools",
- "serde",
- "serde_json",
- "sqlx",
- "time",
- "tokio",
-]
-
-[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -823,6 +806,23 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "msg-stats"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "console",
+ "encoding_rs",
+ "futures",
+ "indicatif",
+ "itertools",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "time",
+ "tokio",
 ]
 
 [[package]]

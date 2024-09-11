@@ -1,0 +1,53 @@
+name: Rust
+
+on:
+
+  push:
+    tags:
+      - "release/*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  build:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Split branch name
+      env:
+        BRANCH: ${{ github.ref_name }}
+      id: split
+      run: echo "FRAGMENT=${BRANCH##*/} >> $GITHUB_OUTPUT"
+    - name: Build
+      run: cargo build --color=always --profile release --package msg-stats --bin msg-stats
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.2.1-node20
+      with:
+        name: msg-stats
+        path: /home/runner/work/msg-stats/msg-stats/target/release/msg-stats
+    - name: Create release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: ${{ steps.split.outputs.fragment[1] }}
+        tag_name: ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: /home/runner/work/msg-stats/msg-stats/target/release/msg-stats
+        asset_name: msg-stats
+        asset_content_type: application/octet-stream
