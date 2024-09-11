@@ -1,34 +1,37 @@
-create table participants
+create table public.participants
 (
     id   serial
         constraint participants_pk
             primary key,
-    name text
+    name text not null
 );
 
-create table messages
+create table public.messages
 (
+    content         text,
+    participant_id  integer
+        constraint messages_participants_id_fk
+            references public.participants,
+    timestamp_ms    timestamp not null,
     id              serial
         constraint messages_pk
             primary key,
-    timestamp_ms    timestamp not null,
-    participant_id  integer
-        constraint messages_participants_id_fk
-            references participants,
-    content         text,
     import_filename varchar
 );
 
-create table reactions
+
+create table public.reactions
 (
-    id         serial
-        constraint reactions_pk
-            primary key,
+    reaction   varchar not null,
     actor_id   integer
         constraint reactions_participants_id_fk
-            references participants,
+            references public.participants,
     message_id integer not null
         constraint reactions_messages_id_fk
-            references messages,
-    reaction   varchar not null
+            references public.messages,
+    id         serial
+        constraint reactions_pk
+            primary key
 );
+
+
