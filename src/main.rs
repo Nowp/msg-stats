@@ -66,7 +66,6 @@ async fn main() -> Result<(), Error> {
         .connect(&*args.destination).await?;
 
     let paths: Vec<String> = fs::read_dir(args.input)?
-        .into_iter()
         .map(|path| path.unwrap().path().to_str().unwrap().to_string())
         .collect();
 
