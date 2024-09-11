@@ -44,7 +44,6 @@ impl ConversationLoader<PgPool> for Conversation {
     fn load_messages(&self, destination: &PgPool, chunk_size: Option<usize>) -> Vec<impl Future<Output=Result<(), Error>>> {
         self.messages
             .chunks(chunk_size.unwrap_or(u32::MAX as usize))
-            .into_iter()
             .map(|chunk| chunk.iter().cloned().collect_vec())
             .map(|messages| async move { insert_messages(destination, messages.iter()).await })
             .collect_vec()

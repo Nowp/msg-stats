@@ -109,7 +109,7 @@ mod tests {
             },
         ];
 
-        let message_copy0 = messages.get(0).unwrap().clone();
+        let message_copy0 = messages.first().unwrap().clone();
         let message_copy1 = messages.get(1).unwrap().clone();
         let (ids, timestamp, files, contents, participants) = messages.into_iter().unnest();
 
@@ -117,7 +117,7 @@ mod tests {
         assert_eq!(timestamp, vec![message_copy0.clone().timestamp_ms, message_copy1.clone().timestamp_ms]);
         assert_eq!(files, vec![message_copy0.import_filename.clone(), message_copy1.import_filename.clone()]);
         assert_eq!(contents, vec![message_copy0.content.clone(), message_copy1.content.clone()]);
-        assert_eq!(participants, vec![message_copy0.participant_id.clone(), message_copy1.participant_id.clone()]);
+        assert_eq!(participants, vec![message_copy0.participant_id, message_copy1.participant_id]);
     }
 
     #[test]
@@ -137,13 +137,13 @@ mod tests {
             },
         ];
 
-        let reaction_copy0 = messages.get(0).unwrap().clone();
+        let reaction_copy0 = messages.first().unwrap().clone();
         let reaction_copy1 = messages.get(1).unwrap().clone();
         let (ids, reactions, actors, messages) = messages.into_iter().unnest();
 
         assert_eq!(ids, vec![0, 1]);
         assert_eq!(reactions, vec![reaction_copy0.clone().reaction, reaction_copy1.clone().reaction]);
-        assert_eq!(actors, vec![reaction_copy0.actor_id.clone(), reaction_copy1.actor_id.clone()]);
-        assert_eq!(messages, vec![reaction_copy0.message_id.clone(), reaction_copy1.message_id.clone()]);
+        assert_eq!(actors, vec![reaction_copy0.actor_id, reaction_copy1.actor_id]);
+        assert_eq!(messages, vec![reaction_copy0.message_id, reaction_copy1.message_id]);
     }
 }

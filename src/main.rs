@@ -63,7 +63,7 @@ async fn main() -> Result<(), Error> {
     // Create a connection pool
     let pool = PgPoolOptions::new()
         .max_connections(args.max_connections)
-        .connect(&*args.destination).await?;
+        .connect(&args.destination).await?;
 
     let paths: Vec<String> = fs::read_dir(args.input)?
         .map(|path| path.unwrap().path().to_str().unwrap().to_string())
