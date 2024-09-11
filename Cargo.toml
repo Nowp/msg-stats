@@ -13,3 +13,5 @@ time = {  version = "0.3.36", features = ["macros"] }
 futures = "0.3.30"
 itertools = "0.13.0"
 clap = { version = "4.0", features = ["derive"] }
+indicatif = "0.17.8"
+console = "0.15.8"

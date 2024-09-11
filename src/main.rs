@@ -1,13 +1,20 @@
 use crate::messenger::MessengerConversation;
 
+use console::{style, Emoji};
 use crate::base::adapter::{ConversationConverter, ConversationLoader, MergeImportFiles};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Error;
 use std::fs;
 use clap::{arg, Parser};
+use indicatif::{MultiProgress, ProgressBar};
 
 mod messenger;
 mod base;
+
+static PARTICIPANT: Emoji<'_, '_> = Emoji("🙋‍♂️  ", "");
+static MESSAGE: Emoji<'_, '_> = Emoji("✉️  ", "");
+static REACTION: Emoji<'_, '_> = Emoji("😆  ", "");
+
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -45,6 +52,8 @@ async fn main() -> Result<(), Error> {
         .map(|path| path.unwrap().path().to_str().unwrap().to_string())
         .collect();
 
+
+    println!("Parsing conversations... {} files", paths.len());
     let conversation = paths.into_iter()
         .map(|path| parse_file(path).unwrap())
         .collect::<Vec<MessengerConversation>>()
@@ -53,8 +62,27 @@ async fn main() -> Result<(), Error> {
         .map(MessengerConversation::convert)
         .unwrap();
 
+
+    println!(
+        "{} {}Importing participants...",
+        style("[2/4]").bold().dim(),
+        PARTICIPANT
+    );
     conversation.load_participants(&pool).await?;
+
+    println!(
+        "{} {}Importing messages...",
+        style("[3/4]").bold().dim(),
+        MESSAGE
+    );
+    
     conversation.load_messages(&pool).await?;
+
+    println!(
+        "{} {}Importing reactions...",
+        style("[4/4]").bold().dim(),
+        REACTION
+    );
     conversation.load_reactions(&pool).await?;
 
     Ok(())
