@@ -9,8 +9,10 @@ This is a Rust tool designed to import message data from various messaging platf
 
 ## Installation:
 Clone this repository.
-Run cargo build --release to build the tool.
+Run cargo build --release to build the tool or download directly from releases.
 Ensure you have a Postgres database set up with the appropriate schema (tables for participants, messages, and reactions).
+
+NB: the file sql/schema.sql can be used to create the schema
 
 Usage:
 Bash
