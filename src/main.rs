@@ -5,8 +5,12 @@ use crate::base::adapter::{ConversationConverter, ConversationLoader, MergeImpor
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Error;
 use std::fs;
+use std::sync::Arc;
 use clap::{arg, Parser};
+use futures::future::join_all;
 use indicatif::{MultiProgress, ProgressBar};
+use itertools::Itertools;
+use tokio::sync::Mutex;
 
 mod messenger;
 mod base;
@@ -26,6 +30,10 @@ struct Args {
     /// Max connections of the connection pool
     #[arg(short, long, default_value_t=1)]
     max_connections: u32,
+
+    /// Chunk size of each task importing to database
+    #[arg(short, long, default_value_t=4294967295)]
+    chunk_size: u32,
 
     /// Folder containing files to import
     #[arg(short, long)]
@@ -75,8 +83,18 @@ async fn main() -> Result<(), Error> {
         style("[3/4]").bold().dim(),
         MESSAGE
     );
-    
-    conversation.load_messages(&pool).await?;
+
+
+    let message_jobs = conversation.load_messages(&pool, Some(args.chunk_size as usize));
+    let m = Arc::new(Mutex::new(ProgressBar::new(message_jobs.len() as u64)));
+
+    let messages_with_pb = message_jobs.into_iter().map(|job| async {
+        job.await.expect("An error has occurred inserting messages");
+        let m_locked = m.lock().await;
+        (*m_locked).inc(1);
+    });
+
+    join_all(messages_with_pb).await;
 
     println!(
         "{} {}Importing reactions...",

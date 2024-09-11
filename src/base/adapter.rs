@@ -1,7 +1,6 @@
+use std::future::Future;
+use crate::base::model::{Conversation, ConversationMarker, Message};
 use sqlx::Error;
-use crate::base::model::{Conversation, Message, Participant, Reaction};
-
-pub trait ConversationMarker {}
 
 pub trait ConversationConverter {
     fn convert(self) -> Conversation;
@@ -13,7 +12,7 @@ where
     Self: Sized
 {
     async fn load_participants(&self, destination: &D) -> Result<(), Error>;
-    async fn load_messages(&self, destination: &D) -> Result<(), Error>;
+    fn load_messages(&self, destination: &D, chunk_size: Option<usize>) -> Vec<impl Future<Output = Result<(), Error>>>;
     async fn load_reactions(&self, destination: &D) -> Result<(), Error>;
 }
 

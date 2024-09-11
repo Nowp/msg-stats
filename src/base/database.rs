@@ -1,10 +1,12 @@
+use std::slice::Iter;
 use std::vec::IntoIter;
+use itertools::Itertools;
 use sqlx::{query, query_as, Error, Pool, Postgres};
 use crate::base::model::{Message, Participant, Reaction};
 use crate::base::unnest::Unnest;
 
-pub(crate) async fn insert_participants(pool: &Pool<Postgres>, participants: IntoIter<Participant>) -> Result<(), Error> {
-    let (ids, names): (Vec<i32>, Vec<String>) = participants.unnest();
+pub(crate) async fn insert_participants(pool: &Pool<Postgres>, participants: Iter<'_, Participant>) -> Result<(), Error> {
+    let (ids, names): (Vec<i32>, Vec<String>) = participants.cloned().collect_vec().into_iter().unnest();
 
     let insert_participants = query_as!(
         Participant,
@@ -16,13 +18,13 @@ pub(crate) async fn insert_participants(pool: &Pool<Postgres>, participants: Int
         &names[..]
     );
 
-    let inserted_participants = insert_participants.execute(pool).await?;
+    let _inserted_participants = insert_participants.execute(pool).await?;
 
     Ok(())
 }
 
-pub(crate) async fn insert_messages(pool: &Pool<Postgres>, messages: IntoIter<Message>) -> Result<(), Error> {
-    let (ids, timestamp, _, content, participants_id) = messages.unnest();
+pub(crate) async fn insert_messages(pool: &Pool<Postgres>, messages: Iter<'_, Message>) -> Result<(), Error> {
+    let (ids, timestamp, _, content, participants_id) = messages.cloned().collect_vec().into_iter().unnest();
 
     let insert_messages = query_as!(
         Message,
@@ -36,13 +38,13 @@ pub(crate) async fn insert_messages(pool: &Pool<Postgres>, messages: IntoIter<Me
         &content[..]  as &[Option<String>]
     );
 
-    let inserted_messages = insert_messages.execute(pool).await?;
+    let _inserted_messages = insert_messages.execute(pool).await?;
 
     Ok(())
 }
 
-pub(crate) async fn insert_reactions(pool: &Pool<Postgres>, reactions: IntoIter<Reaction>) -> Result<(), Error> {
-    let (ids, reactions, actor_ids, message_ids) = reactions.unnest();
+pub(crate) async fn insert_reactions(pool: &Pool<Postgres>, reactions: Iter<'_, Reaction>) -> Result<(), Error> {
+    let (ids, reactions, actor_ids, message_ids) = reactions.cloned().collect_vec().into_iter().unnest();
 
     let insert_reactions = query_as!(
         Reaction,
@@ -56,7 +58,7 @@ pub(crate) async fn insert_reactions(pool: &Pool<Postgres>, reactions: IntoIter<
         &message_ids[..]  as &[i32]
     );
 
-    let reactions = insert_reactions.execute(pool).await?;
+    let _reactions = insert_reactions.execute(pool).await?;
 
     Ok(())
 }

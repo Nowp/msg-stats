@@ -1,11 +1,7 @@
 use time::PrimitiveDateTime;
 use crate::base::adapter::ConversationMarker;
 
-pub struct Record {
-    pub id: i32,
-}
-
-
+/// Someone in the group that may have sent [Message] or put [Reaction] on some
 #[derive(Debug, Clone)]
 pub struct Participant {
     pub id: i32,
@@ -13,6 +9,7 @@ pub struct Participant {
 }
 
 
+/// [Message] are sent by [Participant] and can have [Reaction]
 #[derive(Debug, Clone)]
 pub struct Message {
     pub id: i32,
@@ -22,7 +19,9 @@ pub struct Message {
     pub import_filename: Option<String>,
 }
 
-
+/// [Reaction] are put by [Participant] named "actor" on [Message].
+/// 
+/// The actor may be [None] when the original [Participant] is not found.
 #[derive(Debug, Clone)]
 pub struct Reaction {
     pub id: i32,
@@ -36,5 +35,5 @@ pub struct Conversation {
     pub messages: Vec<Message>,
     pub reactions: Vec<Reaction>,
 }
-
+pub trait ConversationMarker {}
 impl ConversationMarker for Conversation {}

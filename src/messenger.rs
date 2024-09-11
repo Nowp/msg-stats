@@ -1,5 +1,7 @@
+use std::future::Future;
 use std::vec::IntoIter;
 use futures::future::join_all;
+use itertools::Itertools;
 use serde::Deserialize;
 use sqlx::{Error, PgPool};
 use time::{Duration, OffsetDateTime, PrimitiveDateTime};
@@ -32,21 +34,26 @@ pub struct MessengerConversation {
     pub messages: Vec<MessengerMessage>,
 }
 
-impl ConversationMarker for MessengerConversation {
+impl ConversationMarker for MessengerConversation {}
 
-}
 
 impl ConversationLoader<PgPool> for Conversation {
     async fn load_participants(&self, destination: &PgPool) -> Result<(), Error> {
-        insert_participants(destination, self.participants.clone().into_iter()).await?;
+        insert_participants(destination, self.participants.iter()).await?;
         Ok(())
     }
-    async fn load_messages(&self, destination: &PgPool) -> Result<(), Error> {
-        insert_messages(destination, self.messages.clone().into_iter()).await?;
-        Ok(())
+
+    fn load_messages(&self, destination: &PgPool, chunk_size: Option<usize>) -> Vec<impl Future<Output=Result<(), Error>>> {
+        self.messages
+            .chunks(chunk_size.unwrap_or(u32::MAX as usize))
+            .into_iter()
+            .map(|chunk| chunk.iter().cloned().collect_vec())
+            .map(|messages| async move { insert_messages(destination, messages.iter()).await })
+            .collect_vec()
     }
+
     async fn load_reactions(&self, destination: &PgPool) -> Result<(), Error> {
-        insert_reactions(destination, self.reactions.clone().into_iter()).await?;
+        insert_reactions(destination, self.reactions.iter()).await?;
         Ok(())
     }
 }
@@ -98,13 +105,13 @@ impl ConversationConverter for MessengerConversation {
             id: pos as i32,
             reaction: reaction.reaction,
             message_id: reaction.message_id,
-            actor_id: reaction.actor_id
+            actor_id: reaction.actor_id,
         }).collect();
 
         Conversation {
             participants,
             messages,
-            reactions
+            reactions,
         }
     }
 }
