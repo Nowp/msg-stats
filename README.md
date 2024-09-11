@@ -15,7 +15,7 @@ Ensure you have a Postgres database set up with the appropriate schema (tables f
 Usage:
 Bash
 ```bash
-message-import --app <app_name> --destination postgres://user:password@host:port/database --input /path/to/folder/with/conversation/files --chunk-size 1000
+msg-stats --app <app_name> --destination postgres://user:password@host:port/database --input /path/to/folder/with/conversation/files --chunk-size 1000
 ```
 
 Arguments:
