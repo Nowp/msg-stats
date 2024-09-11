@@ -1,20 +1,18 @@
-use std::collections::HashMap;
 use crate::messenger::MessengerConversation;
 
-use console::{style, Emoji};
 use crate::base::adapter::{ConversationConverter, ConversationLoader, MergeImportFiles};
+use crate::base::model::ConversationMarker;
+use clap::{arg, Parser};
+use console::{style, Emoji};
+use futures::future::join_all;
+use indicatif::ProgressBar;
+use itertools::Itertools;
+use serde::Deserialize;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Error;
 use std::fs;
-use std::ops::Add;
 use std::sync::Arc;
-use clap::{arg, Parser};
-use futures::future::join_all;
-use indicatif::{MultiProgress, ProgressBar};
-use itertools::Itertools;
-use serde::Deserialize;
 use tokio::sync::Mutex;
-use crate::base::model::ConversationMarker;
 
 mod messenger;
 mod base;

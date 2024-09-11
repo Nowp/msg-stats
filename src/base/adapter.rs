@@ -1,6 +1,6 @@
-use std::future::Future;
-use crate::base::model::{Conversation, ConversationMarker, Message};
+use crate::base::model::{Conversation, ConversationMarker};
 use sqlx::Error;
+use std::future::Future;
 
 pub trait ConversationConverter {
     fn convert(self) -> Conversation;

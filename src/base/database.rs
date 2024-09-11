@@ -1,9 +1,8 @@
-use std::slice::Iter;
-use std::vec::IntoIter;
-use itertools::Itertools;
-use sqlx::{query, query_as, Error, Pool, Postgres};
 use crate::base::model::{Message, Participant, Reaction};
 use crate::base::unnest::Unnest;
+use itertools::Itertools;
+use sqlx::{query_as, Error, Pool, Postgres};
+use std::slice::Iter;
 
 pub(crate) async fn insert_participants(pool: &Pool<Postgres>, participants: Iter<'_, Participant>) -> Result<(), Error> {
     let (ids, names): (Vec<i32>, Vec<String>) = participants.cloned().collect_vec().into_iter().unnest();
